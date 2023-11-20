@@ -8,14 +8,14 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 
-import data_functions
+from data_utils import load_data, getReceiverCSI, getMDPfromReceiverCSI
 #import data from json using functions
-dicts = data_functions.getDatafromJSON("data/BoxLectureRoomOffline.json")
+dicts = load_data("data/BoxLectureRoomOffline.json")
 data = []
 
 for receiver_id in range(3,7):
-    rcv_CSI = data_functions.getReceiverCSI(dicts, receiver_id, range(3))
-    rcv_MDP = data_functions.getMDPfromReceiverCSI(rcv_CSI)
+    rcv_CSI = getReceiverCSI(dicts, receiver_id, range(3))
+    rcv_MDP = getMDPfromReceiverCSI(rcv_CSI)
     data.append(rcv_MDP)
 
 

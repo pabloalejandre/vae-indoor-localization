@@ -2,7 +2,7 @@ import json
 import numpy as np
 
 #Read json file and outputs a list of dicts corresponding to every transmitter-receiver pairing
-def getDatafromJSON(path):
+def load_data(path):
     data_objects = [] #each element is a dict with the CSI of a transmitter-receiver pairing
     with open(path, 'r') as file:
         for line in file:
@@ -22,7 +22,7 @@ def getMDPfromReceiverCSI(receiver_dicts, training):
     else:
         return sum([d['Delay'] for d in receiver_dicts], [])
 
-dicts = getDatafromJSON("data/BoxLectureRoomOffline.json")
+dicts = load_data("data/BoxLectureRoomOffline.json")
 max_matrix_size = max(len(d['Delay']) for d in dicts)
 data = []
 
