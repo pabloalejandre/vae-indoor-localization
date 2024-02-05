@@ -1,7 +1,15 @@
+#python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-vae_graph
+#figures or images
+figures/
 *.png
+
+#grid csv files
+csv/
+
+#unfinished model implementations
+vae_models/transformer.py
