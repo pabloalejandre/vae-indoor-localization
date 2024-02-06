@@ -10,3 +10,4 @@ This project applies a Variational Autoencoder (VAE) for fingerprinting-based in
 - `utils/`: Contains utility functions and classes.
 - `vae_models/`: VAE Implementations and loss definitions.
 - `trained_models/`: Contains weights and input dimensions of trained models for evaluation.
+- `train_vae_fc.py`: Training script for the VAE model.
