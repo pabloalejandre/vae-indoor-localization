@@ -61,32 +61,9 @@ def save_to_csv(grid, filename):
 
 #Create grids     
 #Training grids
-transmitter1_grid = create_fixed_grid(x=0, y=9.5, z=1.5, entries=1500)
-#transmitter2_grid = create_fixed_grid(x=10, y=9.5, z=1.5, entries=1000)
-#transmitter3_grid = create_fixed_grid(x=5, y=0, z=1.5, entries=1000)
-#transmitter4_grid = create_fixed_grid(x=5, y=19, z=1.5, entries=1000)
+transmitter_grid_train = create_fixed_grid(x=3.75, y=16, z=1.5, entries=1500)
+transmitter_grid_test = create_fixed_grid(x=3.75, y=16, z=1.5, entries=12)
 
-#training_grid = generate_grid_number_of_cells(width=10, length=19, height= 3, num_quadrants=1000)
-training_random_grid = generate_random_testing_points(width=10, length=19, height=3, number_of_points=1500)
-
-rotation_grid = create_zero_grid(entries=1500) 
-
-#Evaluation Grids
-# transmitter1_grid = create_fixed_grid(x=0, y=9.5, z=1.5, entries=12)
-# transmitter2_grid = create_fixed_grid(x=10, y=9.5, z=1.5, entries=12)
-# transmitter3_grid = create_fixed_grid(x=5, y=0, z=1.5, entries=12)
-# transmitter4_grid = create_fixed_grid(x=5, y=19, z=1.5, entries=12)
-
-# fingerprint_grid = generate_grid_number_of_cells(width=10, length=19, height=3, num_quadrants=10)
-# testing_points_grid = generate_random_testing_points(width=10, length=19, height=3, number_of_points=12)
-# rotation_grid = create_zero_grid(entries=12) 
-
-#Save the grids to csv files
-save_to_csv(transmitter1_grid, 'csv/BoxRoom_1Transmitter/training/transmitter1.csv')
-#save_to_csv(transmitter2_grid, 'csv/1TransmitterGrids/testing/transmitter2.csv')
-#save_to_csv(transmitter3_grid, 'csv/1TransmitterGrids/testing/transmitter3.csv')
-#save_to_csv(transmitter4_grid, 'csv/1TransmitterGrids/testing/transmitter4.csv')
-#save_to_csv(fingerprint_grid, 'csv/1TransmitterGrids/testing/fingerprints.csv')
-#save_to_csv(testing_points_grid, 'csv/1TransmitterGrids/testing/testing_points.csv')
-save_to_csv(training_random_grid, 'csv/BoxRoom_1Transmitter/training/training.csv')
-save_to_csv(rotation_grid, 'csv/BoxRoom_1Transmitter/training/rotation.csv')
+#Savee grids
+save_to_csv(transmitter_grid_train, 'csv/transmitter1_train.csv')
+save_to_csv(transmitter_grid_test, 'csv/transmitter1_test.csv')

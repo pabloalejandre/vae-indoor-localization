@@ -3,13 +3,3 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-#figures or images
-figures/
-*.png
-
-#grid csv files
-csv/
-
-#unfinished model implementations
-vae_models/transformer.py

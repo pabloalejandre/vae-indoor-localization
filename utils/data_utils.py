@@ -89,9 +89,10 @@ def find_shortest_sequence_length(mdps):
     return shortest_length
 
 #Truncate batch two shortest sequence
-def truncate_batch(batch, truncate_to):
-    truncated_batch = batch[:, :, :truncate_to]
-    return truncated_batch
+def truncate_mdps(mdps, truncate_to):
+    trunc_mdps = mdps[:, :, :truncate_to]
+    trunc_mdps = np.squeeze(trunc_mdps)
+    return trunc_mdps
 
 
 #######--------------------------------------------------###########
@@ -111,5 +112,7 @@ def get_latent_representation(model, device, data_loader):
         latent_variables.append(z)
         means.append(mean)
         logvars.append(logvar)
-    return torch.cat(means, dim=0)
-    #return torch.cat(latent_variables, dim=0)
+
+    mean_tensors = torch.cat(means, dim=0)
+    z_tensors = torch.cat(latent_variables, dim=0)
+    return mean_tensors.numpy()

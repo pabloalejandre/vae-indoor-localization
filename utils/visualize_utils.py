@@ -5,7 +5,7 @@ import csv
 import numpy as np
 
 #######---------------------------------------------------------###########
-#######     Visualizing spatial features of points              ###########
+#######   Visualizing spatial coords of points in indoor env.   ###########
 #######---------------------------------------------------------###########
 
 def read_point_coordinates(csv_file_path):
@@ -54,6 +54,9 @@ def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2)
     # Create a figure and axis
     fig, ax = plt.subplots()
 
+    # Set the aspect of the plot to be equal
+    ax.set_aspect('equal')
+
     # Create a rectangle
     rect = patches.Rectangle((0, 0), length, width, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
@@ -89,53 +92,93 @@ def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2)
     ax.set_xlim([0, length])
     ax.set_ylim([0, width])
 
-    # Show the plot
     plt.show()
 
 #######---------------------------------------------------------###########
-#######     Visualizing MDP and latent features                 ###########
+#######         Visualizing MDP and latent features             ###########
 #######---------------------------------------------------------###########
 
-def visualize_MDPS(mdps):
-    nrows = 3
-    ncols = 4
-    fig, axs = plt.subplots(nrows, ncols, figsize=(15, 10))
-    for i in range(len(mdps)):
-            row_idx = nrows - 1 - (i // ncols)
-            col_idx = i % ncols
-            ax = axs[row_idx, col_idx]
-            im = ax.imshow(mdps[i], aspect='auto', cmap='viridis')
-            ax.set_title(f'Fingerprint {i}')
-            plt.colorbar(im, ax=ax)
-
+def visualize_mdps(mdp1, mdp2):
+    # Prepare the data
+    y1 = np.array(mdp1)
+    y2 = np.array(mdp2)
+    x1_points = np.full_like(y1, 1)
+    x2_points = np.full_like(y2, 2)
+    
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.scatter(x1_points, y1, color='blue', label='Point 2')
+    plt.scatter(x2_points, y2, color='red', label='Point 1')
+    
+    # Annotate each point with its value
+    for i, value in enumerate(y1):
+        plt.text(1, value, str(value), fontsize=9, ha='right')
+    for i, value in enumerate(y2):
+        plt.text(2, value, str(value), fontsize=9, ha='left')
+    
+    # Labels and legend
+    plt.ylabel('Distances')
+    plt.legend()
+    plt.axis('equal')
+    plt.grid()
     plt.tight_layout()
     plt.show()
-    
 
-def visualize_1D_latent_representations(latent_array):
-    # Create a scatter plot with the values as coordinates on the number line
-    plt.scatter(latent_array, np.zeros_like(latent_array), marker='o', color='blue')
-    # Add text labels for each point with their index, adjusting position for overlap
-    for i, value in enumerate(latent_array):
-        offset = (0.005 * (-1) ** i)  # Adjust the offset to alternate above and below the points
-        plt.text(value, offset, f'{i}', ha='center', va='center')
+def visualize_2D_latent_representations(array1, array2=None):
+    # Define offset values
+    horizontal_offset = 0.05
+    vertical_offset = 0.05
+
+    diagonal_offset_x = 0.05
+    diagonal_offset_y = 0.05
+
+    slight_horizontal_offset = 0.05  # Slightly less offset for horizontal variation
+    slight_vertical_offset = 0.05   # Slightly less offset for vertical variation
+
+    # Expand the offsets list to include more positions
+    offsets = [
+        (0, vertical_offset),                     # top
+        (0, -vertical_offset),                    # bottom
+        (horizontal_offset, 0),                   # right
+        (-horizontal_offset, 0),                  # left
+        (diagonal_offset_x, diagonal_offset_y),   # top-right
+        (-diagonal_offset_x, diagonal_offset_y),  # top-left
+        (diagonal_offset_x, -diagonal_offset_y),  # bottom-right
+        (-diagonal_offset_x, -diagonal_offset_y), # bottom-left
+        # Additional positions
+        (slight_horizontal_offset, slight_vertical_offset),   # slight top-right
+        (-slight_horizontal_offset, slight_vertical_offset),  # slight top-left
+        (slight_horizontal_offset, -slight_vertical_offset),  # slight bottom-right
+        (-slight_horizontal_offset, -slight_vertical_offset), # slight bottom-left
+        (0, 2*vertical_offset),                    # further top
+        (0, -2*vertical_offset),                   # further bottom
+        (2*horizontal_offset, 0),                  # further right
+        (-2*horizontal_offset, 0)                  # further left
+    ]
+    
+    plt.figure(figsize=(8, 6))
+    # Create a scatter plot for the fingerprints
+    plt.scatter(array1[:, 0], array1[:, 1], marker='o', color='blue', label='Fingerprints')
+    for i, (x, y) in enumerate(array1):
+        offset = offsets[i % len(offsets)]  # Cycle through offsets
+        # Adjust position with offset
+        adjusted_x = x + offset[0]
+        adjusted_y = y + offset[1]
+        plt.text(adjusted_x, adjusted_y, f'{i}', ha='center', va='center', color='navy')
+    
+    if array2 is not None:
+        # Create a scatter plot for the testing points if provided
+        plt.scatter(array2[:, 0], array2[:, 1], marker='o', color='green', label='Testing Points')
+        for i, (x, y) in enumerate(array2):
+            offset = offsets[i % len(offsets)]  # Cycle through offsets
+            # Adjust position with offset
+            adjusted_x = x + offset[0]
+            adjusted_y = y + offset[1]
+            plt.text(adjusted_x, adjusted_y, f'{i}', ha='center', va='center', color='darkgreen')
+    
+    plt.axis('equal')
     plt.grid()
     plt.tight_layout()
     plt.show()
 
 
-def visualize_2D_latent_representations(latent_array):
-    # Extract x and y coordinates from the 2D array
-    x_coords = latent_array[:, 0]
-    y_coords = latent_array[:, 1]
-    
-    # Create a scatter plot with the 2D points
-    plt.scatter(x_coords, y_coords, marker='o', color='blue')
-    
-    # Add text labels for each point with their index
-    for i, (x, y) in enumerate(zip(x_coords, y_coords)):
-        plt.text(x, y, f'{i}', ha='center', va='bottom')
-    
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
