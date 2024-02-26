@@ -6,9 +6,10 @@ This project applies a Variational Autoencoder (VAE) for fingerprinting-based in
 
 ## Structure
 
+- `csv/`: Folder with csv input files to the QD simulator
 - `data/`: Directory for storing datasets of different indoor localization scenarios.
-- `utils/`: Contains utility functions and classes.
-- `vae_models/`: VAE Implementations and loss definitions.
 - `trained_models/`: Contains weights and input dimensions of trained models for evaluation.
+- `utils/`: Contains utility functions and classes.
 - `train_vae.py`: Script to train model and save weights.
+- `vae_model.py`: VAE Implementation.
 - `visualize_latent.py`: Visualizes the latent representation of fingerprints and testing points using trained model.

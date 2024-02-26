@@ -33,7 +33,7 @@ def read_point_coordinates(csv_file_path):
     return points
 
 
-def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2):
+def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2=None, show_index=1):
     """
     Draws a rectangle, divides it into a grid based on the number of points in the first list,
     and plots two sets of points with their indices on top, starting at 0. Points from the first list are plotted at the
@@ -80,13 +80,16 @@ def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2)
 
         # Plot the point
         ax.plot(center_x, center_y, 'bo')  # blue circle markers
-        ax.text(center_x, center_y, str(i), ha='center', va='bottom', color='blue')
+        if show_index:
+            ax.text(center_x, center_y, str(i), ha='center', va='bottom', color='blue')
 
-    # Plot the second set of points at their respective coordinates with index on top (starting at 0)
-    for i, point in enumerate(points2):
-        # Plot the point
-        ax.plot(point[0], point[1], 'go')  # green circle markers
-        ax.text(point[0], point[1], str(i), ha='center', va='bottom', color='green')
+    if points2 is not None:
+        # Plot the second set of points at their respective coordinates with index on top (starting at 0)
+        for i, point in enumerate(points2):
+            # Plot the point
+            ax.plot(point[0], point[1], 'go')  # green circle markers
+            if show_index:
+                ax.text(point[0], point[1], str(i), ha='center', va='bottom', color='green')
 
     # Set the limits of the plot to the size of the rectangle
     ax.set_xlim([0, length])
@@ -95,36 +98,93 @@ def draw_rectangle_with_grid_and_indexed_points(length, width, points1, points2)
     plt.show()
 
 #######---------------------------------------------------------###########
-#######         Visualizing MDP and latent features             ###########
+#######                   Visualizing MDPs                      ###########
 #######---------------------------------------------------------###########
 
-def visualize_mdps(mdp1, mdp2):
-    # Prepare the data
-    y1 = np.array(mdp1)
-    y2 = np.array(mdp2)
-    x1_points = np.full_like(y1, 1)
-    x2_points = np.full_like(y2, 2)
+def visualize_mdps(list_mdp1, list_mdp2, title=''):
+    num_pairs = len(list_mdp1)  # Assuming list_mdp1 and list_mdp2 are of the same length
     
-    # Plotting
-    plt.figure(figsize=(10, 6))
-    plt.scatter(x1_points, y1, color='blue', label='Point 2')
-    plt.scatter(x2_points, y2, color='red', label='Point 1')
+    # Adjust the height of the figure to reduce vertical padding and ensure legend is visible
+    fig, axs = plt.subplots(1, num_pairs, figsize=(4*num_pairs, 8))  # Reduced height from 15 to 8
     
-    # Annotate each point with its value
-    for i, value in enumerate(y1):
-        plt.text(1, value, str(value), fontsize=9, ha='right')
-    for i, value in enumerate(y2):
-        plt.text(2, value, str(value), fontsize=9, ha='left')
+    # Find global y-axis limits
+    global_min = min(min(np.array(mdp1).min(), np.array(mdp2).min()) for mdp1, mdp2 in zip(list_mdp1, list_mdp2))
+    global_max = max(max(np.array(mdp1).max(), np.array(mdp2).max()) for mdp1, mdp2 in zip(list_mdp1, list_mdp2))
     
-    # Labels and legend
-    plt.ylabel('Distances')
-    plt.legend()
-    plt.axis('equal')
-    plt.grid()
-    plt.tight_layout()
+    for i, (mdp1, mdp2) in enumerate(zip(list_mdp1, list_mdp2)):
+        ax = axs[i]
+        y1 = np.array(mdp1)
+        y2 = np.array(mdp2)
+        x1_points = np.full_like(y1, 0.9)  # Set original MPCs to 0.9 on the x-axis
+        x2_points = np.full_like(y2, 1.1)  # Set reconstructed MPCs to 1.1 on the x-axis
+
+        ax.scatter(x1_points, y1, color='royalblue', label='Testing Points (No obstacles)' if i == 0 else "", s=50)
+        ax.scatter(x2_points, y2, color='darkblue', label='Testing Points (with obstacles)' if i == 0 else "", s=50)
+        
+        ax.set_xlim(0.7, 1.3)
+        ax.set_ylim(global_min-1, global_max+1)
+        ax.set_xlabel(f'Point {i}')
+        if i == 0:
+            ax.set_ylabel('Distance (m)')
+            # Place the legend inside the plot area at the top left corner
+            ax.legend(loc='lower left', bbox_to_anchor=(0, 1), ncol=1, fancybox=True, shadow=True)
+        else:
+            ax.set_yticklabels([])
+        
+        ax.set_xticks([])
+        ax.grid()
+
+    # Adjust subplot parameters to use available space more effectively
+    plt.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9, wspace=0.2)
+    fig.suptitle(title, fontsize=16, y=0.95)  # Adjust y parameter to position suptitle
+    plt.show() 
+
+
+
+#######---------------------------------------------------------###########
+#######       Visualizing VAE latent and decoder outputs        ###########
+#######---------------------------------------------------------###########
+
+def visualize_reconstructions(list_mdp1, list_mdp2, title=''):
+    num_pairs = len(list_mdp1)  # Assuming list_mdp1 and list_mdp2 are of the same length
+    
+    # Adjust the height of the figure to reduce vertical padding and ensure legend is visible
+    fig, axs = plt.subplots(1, num_pairs, figsize=(4*num_pairs, 8))  # Reduced height from 15 to 8
+    
+    # Find global y-axis limits
+    global_min = min(min(np.array(mdp1).min(), np.array(mdp2).min()) for mdp1, mdp2 in zip(list_mdp1, list_mdp2))
+    global_max = max(max(np.array(mdp1).max(), np.array(mdp2).max()) for mdp1, mdp2 in zip(list_mdp1, list_mdp2))
+    
+    for i, (mdp1, mdp2) in enumerate(zip(list_mdp1, list_mdp2)):
+        ax = axs[i]
+        y1 = np.array(mdp1)
+        y2 = np.array(mdp2)
+        x1_points = np.full_like(y1, 0.9)  # Set original MPCs to 0.9 on the x-axis
+        x2_points = np.full_like(y2, 1.1)  # Set reconstructed MPCs to 1.1 on the x-axis
+
+        ax.scatter(x1_points, y1, color='royalblue', label='Original MPCs' if i == 0 else "", s=50)
+        ax.scatter(x2_points, y2, color='darkblue', label='Reconstructed MPCs' if i == 0 else "", s=50)
+        
+        ax.set_xlim(0.7, 1.3)
+        ax.set_ylim(global_min-1, global_max+1)
+        ax.set_xlabel(f'Point {i}')
+        if i == 0:
+            ax.set_ylabel('Distance (m)')
+            # Place the legend inside the plot area at the top left corner
+            ax.legend(loc='lower left', bbox_to_anchor=(0, 1), ncol=1, fancybox=True, shadow=True)
+        else:
+            ax.set_yticklabels([])
+        
+        ax.set_xticks([])
+        ax.grid()
+
+    # Adjust subplot parameters to use available space more effectively
+    plt.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9, wspace=0.2)
+    fig.suptitle('VAE MDP Reconstructions: ' + title, fontsize=16, y=0.95)  # Adjust y parameter to position suptitle
     plt.show()
 
-def visualize_2D_latent_representations(array1, array2=None):
+
+def visualize_2D_latent_space(array1, array2=None, title=''):
     # Define offset values
     horizontal_offset = 0.05
     vertical_offset = 0.05
@@ -177,8 +237,11 @@ def visualize_2D_latent_representations(array1, array2=None):
             plt.text(adjusted_x, adjusted_y, f'{i}', ha='center', va='center', color='darkgreen')
     
     plt.axis('equal')
+    plt.xlabel('$z_1$')
+    plt.ylabel('$z_2$')
+    plt.title('2-Dimensional Latent Space: ' + title)
+    plt.legend()
     plt.grid()
     plt.tight_layout()
     plt.show()
-
 
