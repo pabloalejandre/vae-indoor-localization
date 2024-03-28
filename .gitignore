@@ -3,3 +3,10 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+#lightning_logs
+lightning_logs/
+
+#testing scripts
+testing.py
+testing_vae.py
