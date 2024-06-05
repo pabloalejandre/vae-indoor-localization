@@ -18,9 +18,9 @@ def vae_loss(recon_x, x, mean, logvar, beta=0.5):
     return (1-beta)*MSE + beta*KLD, MSE, KLD
 
 #Hyperparameters
-scenario_name, feature_length = 'LivingRoom', 16
 #scenario_name, feature_length = 'BoxLectureRoom', 14
 #scenario_name, feature_length = 'LShapedRoom', 15
+scenario_name, feature_length = 'LivingRoom', 15
 data_path = f'scenarios/{scenario_name}/data/training.json'
 latent_dim = 2
 num_epochs = 300

@@ -166,44 +166,6 @@ def random_delete_paths(batch, delete_probability, max_groups, max_group_size):
         if np.random.rand() < delete_probability:
             deleted_sample = batch[i].clone()
             sample_size = batch[i].size(-1)
-            group_sizes = np.random.randint(0, max_group_size+1, size=max_groups)
-            for group_size in group_sizes:
-                # Ensure the group can fit in the remaining elements
-                if sample_size - group_size > 0:
-                    start_index = np.random.randint(0, sample_size - group_size)
-                    end_index = start_index + group_size
-                    
-                    # Generate a list of indices for replacement that are outside the current deletion group
-                    possible_replacements = [i for i in range(sample_size) if i < start_index or i >= end_index]
-                    for idx in range(start_index, end_index):
-                        if possible_replacements:
-                            replace_with_index = np.random.choice(possible_replacements)
-                            # Replace the value
-                            deleted_sample[..., idx] = deleted_sample[..., replace_with_index]
-        else:
-            deleted_sample = batch[i]
-        
-        deleted_batch.append(deleted_sample)
-    return torch.stack(deleted_batch)
-
-def random_delete_paths(batch, delete_probability, max_groups, max_group_size):
-    """
-    Randomly deletes groups of elements in each batch sample, with each group having a separately determined size.
-    This simulates obstacle blocking certain paths in groups, used for data augmentation in training to make the model more flexible.
-
-    Parameters:
-    - batch: Input batch of samples.
-    - delete_probability: Probability of deleting groups of elements in a sample.
-    - max_groups: Maximum number of groups to delete. The size of each group is determined independently.
-
-    Returns:
-    - A new batch with groups of elements randomly deleted and replaced with other random values from the sample.
-    """
-    deleted_batch = []
-    for i in range(batch.size(0)):
-        if np.random.rand() < delete_probability:
-            deleted_sample = batch[i].clone()
-            sample_size = batch[i].size(-1)
             group_size = np.random.randint(0, max_group_size+1)
             
             start_index = np.random.randint(0, sample_size)
@@ -235,7 +197,7 @@ def augment_data(batch, delete_probability, max_groups=2, max_group_size=1):
     return augmented_batch
 
 #######--------------------------------------------------###########
-#######          Functions for evaluating VAE            ###########
+#######          Functions for evaluating model          ###########
 #######--------------------------------------------------###########
 
 def evaluate_model(model, feature_length, data_loader):
@@ -295,6 +257,39 @@ def evaluate_model_modified(model, feature_length, data_loader):
     input_tensors = torch.cat(inputs, dim=0)
     return mean_tensors.numpy(), recon_tensors.numpy(), input_tensors.numpy()
 
+
+def find_k_nearest_neighbors(testing_latent, reference_latent, k=5):
+    # Calculate the squared differences along each dimension
+    diff_square = np.sum((testing_latent[:, np.newaxis, :] - reference_latent[np.newaxis, :, :]) ** 2, axis=2)
+    # Compute Euclidean distances
+    distances = np.sqrt(diff_square)
+    # Find the indices of the k smallest distances for each testing point
+    nearest_neighbors_indices = np.argsort(distances, axis=1)[:, :k]
+    return nearest_neighbors_indices
+
+
+def estimate_positions_from_nearest_neighbors(nearest_neighbors_indices, reference_coords):
+    estimated_positions = np.zeros((nearest_neighbors_indices.shape[0], 2))
+    for i, neighbors in enumerate(nearest_neighbors_indices):
+        # Initialize a temporary array to store the coordinates of the nearest neighbors
+        neighbor_coords = np.zeros((neighbors.shape[0], 2))
+        # Fetch the coordinates of each nearest neighbor
+        for j, neighbor_index in enumerate(neighbors):
+            neighbor_coords[j] = reference_coords[neighbor_index]
+        # Compute the average position of these neighbors
+        estimated_positions[i] = neighbor_coords.mean(axis=0)
+    
+    return estimated_positions
+
+def calculate_position_errors(estimated_positions, real_positions):
+    # Subtract the estimated positions from the ground truth positions
+    differences = real_positions - estimated_positions
+    # Calculate the squared distances
+    squared_distances = np.sum(np.square(differences), axis=1)
+    # Take the square root to get the Euclidean distances
+    errors = np.sqrt(squared_distances)
+    
+    return errors
 
 #######--------------------------------------------------###########
 #######      Functions for systematic testing            ###########

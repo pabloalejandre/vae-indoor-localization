@@ -2,10 +2,13 @@ import csv
 import math
 import random
 
-def generate_grid_number_of_cells(width, length, height, num_quadrants):
+def generate_grid_number_of_cells(width, length, height, num_rows, num_cols):
     # Calculate the number of rows and columns to make the grid as square as possible
-    num_columns = int(math.ceil(math.sqrt(num_quadrants)))
-    num_rows = int(math.ceil(num_quadrants / num_columns))
+    #num_quadrants = num_cols*num_rows
+    #num_columns = int(math.ceil(math.sqrt(num_quadrants)))
+    #num_rows = int(math.ceil(num_quadrants / num_columns))
+    num_columns = num_cols
+    num_rows = num_rows
     # Calculate the width and height of each quadrant
     quadrant_width = width / num_columns
     quadrant_height = length / num_rows
@@ -69,3 +72,7 @@ def save_to_csv(grid, filename):
     with open(filename, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerows(grid)
+
+
+fingerprints3 = generate_grid_number_of_cells(7,7,3,14,14)
+save_to_csv(fingerprints3, 'fingerprints3.csv')

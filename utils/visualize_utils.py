@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import csv
 import numpy as np
-import pandas as pd
 
 #######---------------------------------------------------------###########
 #######   Visualizing spatial coords of points in indoor env.   ###########
@@ -32,8 +31,8 @@ def read_point_coordinates(csv_file_path):
 
     return points
 
-def draw_points_in_room(length, width, transmitter, points1, points2=None, show_index=True, LRoom=False, draw_grid=False):
-    fig, ax = plt.subplots(figsize=(10, 6))
+def draw_points_in_room(length, width, transmitter, points1, points2=None, show_index=True, LRoom=False, draw_grid=False, scenario=''):
+    fig, ax = plt.subplots(figsize=(15, 9))
 
     # Set the aspect of the plot to be equal and the limits
     ax.set_aspect('equal')
@@ -63,13 +62,13 @@ def draw_points_in_room(length, width, transmitter, points1, points2=None, show_
     # Plot transmitter with increased size and higher zorder
     for i, (x, y) in enumerate(transmitter):
         ax.plot(x, y, 'r^', zorder=4, clip_on=False, label='Transmitter' if i == 0 else "")
-        ax.text(x+0.25, y + 0.25, 'tx', color='red', ha='center', va='bottom', zorder=5)
+        ax.text(x+0.25, y + 0.2, 'tx', color='red', ha='center', va='bottom', zorder=5)
 
     # Plot points from the first list and label them
     for i, (x, y) in enumerate(points1):
         ax.plot(x, y, 'bo', zorder=3, label='Ref. Points' if i == 0 else "")
         if show_index:
-            ax.text(x, y + 0.25, str(i), color='blue', ha='center', va='bottom', zorder=3)
+            ax.text(x, y + 0.15, str(i), size='xx-small', color='blue', ha='center', va='bottom', zorder=3)
 
     # Plot points from the second list and label them, if provided
     if points2:
@@ -82,7 +81,7 @@ def draw_points_in_room(length, width, transmitter, points1, points2=None, show_
     ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
     # Adjust the title position
-    fig.suptitle('Indoor Geometry', y=0.95)  # Adjust the y value as needed for optimal positioning
+    fig.suptitle(f'{scenario}: Indoor Geometry', y=0.95)  # Adjust the y value as needed for optimal positioning
 
     plt.tight_layout()
     plt.show()
@@ -92,7 +91,7 @@ def draw_points_in_room(length, width, transmitter, points1, points2=None, show_
 #######                   Visualizing MDPs                      ###########
 #######---------------------------------------------------------###########
 
-def visualize_mdps(list_mdp1, list_mdp2, label1='', label2='', title=''):
+def visualize_mdps(list_mdp1, list_mdp2, label1='', label2='', scenario='', title=''):
     num_pairs = len(list_mdp1)
     
     fig, axs = plt.subplots(1, num_pairs, figsize=(4*num_pairs, 8))
@@ -123,14 +122,15 @@ def visualize_mdps(list_mdp1, list_mdp2, label1='', label2='', title=''):
         ax.grid()
 
     plt.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9, wspace=0.2)
-    fig.suptitle(title, fontsize=16, y=0.95)
+    fig.suptitle(f'{scenario}: {title}', fontsize=16, y=0.95)
     plt.show()
+
 
 #######---------------------------------------------------------###########
 #######       Visualizing VAE latent and decoder outputs        ###########
 #######---------------------------------------------------------###########
 
-def visualize_reconstructions(list_mdp1, list_mdp2, title=''):
+def visualize_reconstructions(list_mdp1, list_mdp2, scenario='', title='', obstacles=''):
     num_pairs = len(list_mdp1)  # Assuming list_mdp1 and list_mdp2 are of the same length
     
     # Adjust the height of the figure to reduce vertical padding and ensure legend is visible
@@ -165,11 +165,11 @@ def visualize_reconstructions(list_mdp1, list_mdp2, title=''):
 
     # Adjust subplot parameters to use available space more effectively
     plt.subplots_adjust(left=0.05, right=0.95, bottom=0.1, top=0.9, wspace=0.2)
-    fig.suptitle('VAE MDP Reconstructions: ' + title, fontsize=16, y=0.95)  # Adjust y parameter to position suptitle
+    fig.suptitle(f'{scenario}: {title} MDP Reconstructions {obstacles}', fontsize=16, y=0.95)  # Adjust y parameter to position suptitle
     plt.show()
 
 
-def visualize_2D_latent_space(array1, array2=None, title=''):
+def visualize_2D_latent_space(array1, array2=None, scenario='', title=''):
     # Define offset values
     horizontal_offset = 0.05
     vertical_offset = 0.05
@@ -202,7 +202,7 @@ def visualize_2D_latent_space(array1, array2=None, title=''):
     ]
     
     plt.figure(figsize=(8, 6))
-    # Create a scatter plot for the fingerprints
+    # Create a scatter plot for the reference points
     plt.scatter(array1[:, 0], array1[:, 1], marker='o', color='blue', label='Reference Points')
     for i, (x, y) in enumerate(array1):
         offset = offsets[i % len(offsets)]  # Cycle through offsets
@@ -224,9 +224,31 @@ def visualize_2D_latent_space(array1, array2=None, title=''):
     plt.axis('equal')
     plt.xlabel('$z_1$')
     plt.ylabel('$z_2$')
-    plt.title('2-Dimensional Latent Space: ' + title)
+    plt.title(f'{scenario}: 2-Dimensional Latent Space {title}' )
     plt.legend()
     plt.grid()
     plt.tight_layout()
     plt.show()
 
+
+#######---------------------------------------------------------###########
+#######        Visualizing localization and  errors             ###########
+#######---------------------------------------------------------###########
+
+def visualize_error_cdf(errors, k, title_addition):
+    # Sort the errors to calculate the cumulative distribution
+    sorted_errors = np.sort(errors)
+    # Calculate the proportion of data points for each error value
+    y_values = np.arange(1, len(sorted_errors) + 1) / len(sorted_errors)
+    
+    # Plot the CDF
+    plt.figure(figsize=(8, 5))
+    label_str = f'CDF (k={k})'
+    plt.step(sorted_errors, y_values, where='post', label=label_str)
+    plt.xlabel('Localization error in meters')
+    plt.ylabel('Cumulative Probability')
+    plt.title(f'CDF of the Localization Error of the Testing Points {title_addition}')
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.show()

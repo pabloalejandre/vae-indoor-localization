@@ -9,5 +9,6 @@ This project applies a Variational Autoencoder (VAE) for fingerprinting-based in
 - `scenarios/`: Folder containing the different indoor scenarios, their signal data and indoor geometry information.
 - `trained_models/`: Contains checkpoints of trained models for evaluation.
 - `utils/`: Contains utility functions and classes.
-- `vae_model.py`: VAE Implementation and training.
+- `vae_model.py`: VAE implementation and training.
 - `evaluate_model.py`: Evaluates the trained model and visualizes the latent representation and reconstruction of fingerprints and testing points.
+- `visualize_room.py`: Visualizes the indoor geometry (ground truth) of the scenarios.
